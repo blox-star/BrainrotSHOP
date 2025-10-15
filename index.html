@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Brainrot Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 10px;
+            line-height: 1.4;
+        }
+        header {
+            text-align: center;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            margin-bottom: 10px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        header p {
+            margin: 5px 0 0;
+            font-size: 0.9em;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 10px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .auth-container h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .auth-container input {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .auth-container button {
+            background-color: #28a745;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .auth-container button:hover {
+            background-color: #218838;
+        }
+        .error, .success {
+            font-size: 0.8em;
+            margin: 5px 0;
+        }
+        .error { color: #d32f2f; }
+        .success { color: #28a745; }
+        section {
+            max-width: 1200px;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .brainrot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            justify-items: center;
+        }
+        .brainrot-card {
+            width: 160px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .brainrot-card h3 {
+            font-size: 0.9em;
+            margin: 5px 0;
+            color: #333;
+            word-wrap: break-word;
+        }
+        .brainrot-card p {
+            font-size: 0.8em;
+            margin: 2px 0;
+            color: #666;
+        }
+        .buy-button {
+            background-color: #28a745;
+            color: white;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            width: 100%;
+        }
+        .buy-button:hover {
+            background-color: #218838;
+        }
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.8em;
+        }
+        #secret { border-left: 4px solid #4caf50; }
+        #chatModal {
+            display: none;
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            width: 300px;
+            height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            padding: 10px;
+            z-index: 1000;
+        }
+        #chatHistory {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        #chatInput {
+            width: calc(100% - 60px);
+            padding: 5px;
+        }
+        #sendChat {
+            padding: 5px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #closeChat {
+            padding: 5px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        #openChatBtn {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        #logoutCircle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            z-index: 1000;
+        }
+        #logoutModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 1001;
+        }
+        #addStockBtn {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        #addStockModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            width: 300px;
+            z-index: 1001;
+        }
+        #addStockModal select, #addStockModal button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+        }
+        #traitsContainer {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        #traitsContainer label {
+            display: block;
+            text-align: left;
+        }
+        #activeChatsBtn {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            right: 60px;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1em;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        #activeChatsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            width: 400px;
+            z-index: 1001;
+        }
+        #usersList button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            background: #eee;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        #chatView #adminChatHistory {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        #adminChatInput {
+            width: calc(100% - 60px);
+            padding: 5px;
+        }
+        #adminSend {
+            padding: 5px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .remove-btn {
+            background-color: #d32f2f;
+            color: white;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .remove-btn:hover {
+            background-color: #b71c1c;
+        }
+    </style>
+</head>
+<body onload="checkLogin(); buildGrid();">
+    <header>
+        <h1>Secret Brainrot Shop</h1>
+        <p>Exclusive Brainrots from Steal a Brainrot. All sales final. Note: May violate Roblox TOS—proceed at own risk.</p>
+    </header>
+
+    <div class="auth-container" id="authContainer">
+        <h2>Sign Up / Login</h2>
+        <div id="authForm">
+            <input type="text" id="username" placeholder="Username (min 4 characters)" required>
+            <input type="password" id="password" placeholder="Password (min 8 characters)" required>
+            <div id="authMessage" class="error"></div>
+            <button onclick="signup()">Sign Up</button>
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
+
+    <section id="secret">
+        <h2>Available Brainrots</h2>
+        <div class="brainrot-grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Secret Brainrot Shop. Secure with HTTPS & updates.</p>
+    </footer>
+
+    <div id="chatModal">
+        <h3>Chat with Jake (Seller)</h3>
+        <div id="chatHistory"></div>
+        <input id="chatInput" placeholder="Type message...">
+        <button id="sendChat" onclick="sendMessage()">Send</button>
+        <button id="closeChat" onclick="closeChat()">Close</button>
+    </div>
+
+    <button id="openChatBtn" onclick="openChat()">💬</button>
+
+    <button id="logoutCircle" onclick="openLogoutModal()">L</button>
+
+    <div id="logoutModal">
+        <p>Log out?</p>
+        <button onclick="logout()">Yes</button>
+        <button onclick="closeLogoutModal()">No</button>
+    </div>
+
+    <button id="addStockBtn" onclick="openAddStockModal()">+</button>
+
+    <div id="addStockModal">
+        <h3>Add Brainrot to Stock</h3>
+        <select id="brainrotSelect">
+            <!-- Options added via JS -->
+        </select>
+        <select id="mutationSelect">
+            <!-- Options added via JS -->
+        </select>
+        <div>Traits:</div>
+        <div id="traitsContainer">
+            <!-- Checkboxes added via JS -->
+        </div>
+        <button onclick="addStock()">Add to Stock</button>
+        <button onclick="closeAddStockModal()">Cancel</button>
+    </div>
+
+    <button id="activeChatsBtn" onclick="openActiveChatsModal()">📩</button>
+
+    <div id="activeChatsModal">
+        <h3>Active Chats</h3>
+        <div id="usersList">
+            <!-- User buttons added via JS -->
+        </div>
+        <div id="chatView" style="display:none;">
+            <h4>Chat with <span id="chatUser"></span></h4>
+            <div id="adminChatHistory"></div>
+            <input id="adminChatInput" placeholder="Respond...">
+            <button id="adminSend" onclick="adminSend()">Send</button>
+        </div>
+        <button onclick="closeActiveChatsModal()">Close</button>
+    </div>
+
+    <script>
+        const brainrots = [
+            "Pot Hotspot", "Chicleteira Bicicleteira", "Los Chicleteiras", "Garama and Madundung", "Nuclearo Dinossauro",
+            "Mariachi Corazoni", "Ketupat Kepat", "Tralaledon", "67", "Dragon Cannelloni", "Esok Sekolah", "Los Tacoritas",
+            "La Spooky Grande", "La Supreme Combinasion", "Tacorita Bicicleta", "Nooo My Hotspot", "Los Bros",
+            "Tacorita Bicicleta", "Tralaledon", "Los 67", "Tictac Sahur", "Strawberry Elephant", "Las Sis",
+            "Ketchuru and Musturu", "Los Hotspotsitos", "Eviledon", "Spooky and Pumpky", "La Extinct Grande",
+            "Los Primos", "Celularcini Viciosini", "La Grande Combinasion", "Quesadilla Crocodila", "Los Mobilis",
+            "Los Combinasionas", "Spaghetti Tualetti", "Money Money Puggy", "Los Nooo My Hotspotsitos", "To to to Sahur"
+        ];
+
+        const mutations = {
+            "Normal": 1,
+            "Gold": 1.25,
+            "Diamond": 1.5,
+            "Rainbow": 10,
+            "Bloodrot": 2,
+            "Candy": 4,
+            "Galaxy": 7,
+            "Lava": 6,
+            "YingYang": 7.5
+        };
+
+        const traits = {
+            "Halloween": 4.5,
+            "Rain": 2.5,
+            "Snowy": 3,
+            "Starfall": 2.5,
+            "Hat": 4.5,
+            "Water": 4,
+            "Galactic": 4,
+            "Bombardiro": 4,
+            "Extinct": 4,
+            "Spider": 4.5,
+            "Paint": 6,
+            "Tie": 4.75,
+            "Strawberry": 8,
+            "Taco": 3,
+            "Tung": 5,
+            "Crab": 5,
+            "Concert": 5,
+            "Sombrero": 5,
+            "Glitch": 6,
+            "Fire": 4,
+            "Fireworks": 6,
+            "Nyan": 6,
+            "10B": 4,
+            "Bloodmoon": 2,
+            "Brazil": 6,
+            "Bubblegum": 4,
+            "UFO": 3,
+            "Mygame43": 6
+        };
+
+        let stock = JSON.parse(localStorage.getItem('stock')) || [];
+        let messages = [];
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let loggedInUser = localStorage.getItem('loggedInUser');
+        const seller = 'Jake';
+
+        if (!users[seller]) {
+            users[seller] = { password: 'admin12345', messages: [], isAdmin: true };
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function checkLogin() {
+            const authContainer = document.getElementById('authContainer');
+            const logoutCircle = document.getElementById('logoutCircle');
+            const addStockBtn = document.getElementById('addStockBtn');
+            const activeChatsBtn = document.getElementById('activeChatsBtn');
+            const openChatBtn = document.getElementById('openChatBtn');
+
+            if (loggedInUser && users[loggedInUser]) {
+                messages = users[loggedInUser].messages || [];
+                authContainer.style.display = 'none';
+                logoutCircle.style.display = 'block';
+                openChatBtn.style.display = 'block';
+                if (loggedInUser === seller) {
+                    addStockBtn.style.display = 'block';
+                    activeChatsBtn.style.display = 'block';
+                    openChatBtn.style.display = 'none';
+                }
+            } else {
+                authContainer.style.display = 'block';
+                logoutCircle.style.display = 'none';
+                addStockBtn.style.display = 'none';
+                activeChatsBtn.style.display = 'none';
+                openChatBtn.style.display = 'none';
+            }
+            buildGrid();
+        }
+
+        function signup() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('authMessage');
+
+            if (username.length < 4) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Username must be at least 4 characters long.';
+                return;
+            }
+            if (password.length < 8) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Password must be at least 8 characters long.';
+                return;
+            }
+            if (users[username]) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Username already exists. Try another.';
+                return;
+            }
+
+            users[username] = { password, messages: [] };
+            localStorage.setItem('users', JSON.stringify(users));
+            messageDiv.className = 'success';
+            messageDiv.textContent = 'Sign-up successful! You can now log in.';
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('authMessage');
+
+            if (!users[username]) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Username not found. Please sign up.';
+                return;
+            }
+            if (users[username].password !== password) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = 'Incorrect password.';
+                return;
+            }
+
+            loggedInUser = username;
+            localStorage.setItem('loggedInUser', loggedInUser);
+            checkLogin();
+        }
+
+        function openLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            loggedInUser = null;
+            messages = [];
+            closeLogoutModal();
+            checkLogin();
+        }
+
+        function buildGrid() {
+            const grid = document.querySelector('.brainrot-grid');
+            grid.innerHTML = '';
+            stock.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'brainrot-card';
+                card.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>Mutation: ${item.mutation}</p>
+                    <p>Traits: ${item.traits.join(', ') || 'None'}</p>
+                    <p>Price: $TBD</p>
+                    <button class="buy-button" onclick="buyItem('${item.name}', '${item.mutation}', '${item.traits.join(',')}')">Buy</button>
+                `;
+                if (loggedInUser === seller) {
+                    card.innerHTML += `<button class="remove-btn" onclick="removeItem(${index})">-</button>`;
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function openAddStockModal() {
+            const brainrotSelect = document.getElementById('brainrotSelect');
+            brainrotSelect.innerHTML = brainrots.map(name => `<option value="${name}">${name}</option>`).join('');
+
+            const mutationSelect = document.getElementById('mutationSelect');
+            mutationSelect.innerHTML = Object.keys(mutations).map(name => `<option value="${name}">${name} (x${mutations[name]})</option>`).join('');
+
+            const traitsContainer = document.getElementById('traitsContainer');
+            traitsContainer.innerHTML = Object.keys(traits).map(name => `
+                <label>
+                    <input type="checkbox" value="${name}"> ${name} (x${traits[name]})
+                </label>
+            `).join('');
+
+            document.getElementById('addStockModal').style.display = 'block';
+        }
+
+        function closeAddStockModal() {
+            document.getElementById('addStockModal').style.display = 'none';
+        }
+
+        function addStock() {
+            const name = document.getElementById('brainrotSelect').value;
+            const mutation = document.getElementById('mutationSelect').value;
+            const selectedTraits = Array.from(document.querySelectorAll('#traitsContainer input:checked')).map(input => input.value);
+
+            stock.push({ name, mutation, traits: selectedTraits });
+            localStorage.setItem('stock', JSON.stringify(stock));
+            closeAddStockModal();
+            buildGrid();
+        }
+
+        function removeItem(index) {
+            stock.splice(index, 1);
+            localStorage.setItem('stock', JSON.stringify(stock));
+            buildGrid();
+        }
+
+        function buyItem(name, mutation, traits) {
+            if (!loggedInUser || loggedInUser === seller) {
+                alert('Please log in as a buyer to purchase.');
+                return;
+            }
+
+            const itemDesc = `${name} (Mutation: ${mutation}, Traits: ${traits || 'None'})`;
+            messages.push({ from: loggedInUser, text: `I want to buy ${itemDesc}` });
+            users[loggedInUser].messages = messages;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            openChat();
+        }
+
+        function openChat() {
+            if (loggedInUser === seller) return; // Seller uses active chats
+
+            const chatModal = document.getElementById('chatModal');
+            const chatHistory = document.getElementById('chatHistory');
+            chatModal.style.display = 'block';
+            chatHistory.innerHTML = '';
+            messages.forEach(msg => {
+                chatHistory.innerHTML += `<p><strong>${msg.from}:</strong> ${msg.text}</p>`;
+            });
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function closeChat() {
+            document.getElementById('chatModal').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            messages.push({ from: loggedInUser, text: msg });
+            users[loggedInUser].messages = messages;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            input.value = '';
+            openChat();
+        }
+
+        function openActiveChatsModal() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            Object.keys(users).forEach(user => {
+                if (user !== seller && users[user].messages && users[user].messages.length > 0) {
+                    usersList.innerHTML += `<button onclick="viewUserChat('${user}')">${user}</button>`;
+                }
+            });
+            document.getElementById('chatView').style.display = 'none';
+            document.getElementById('activeChatsModal').style.display = 'block';
+        }
+
+        function closeActiveChatsModal() {
+            document.getElementById('activeChatsModal').style.display = 'none';
+        }
+
+        function viewUserChat(user) {
+            document.getElementById('chatView').style.display = 'block';
+            document.getElementById('chatUser').textContent = user;
+            const adminChatHistory = document.getElementById('adminChatHistory');
+            adminChatHistory.innerHTML = '';
+            users[user].messages.forEach(msg => {
+                adminChatHistory.innerHTML += `<p><strong>${msg.from}:</strong> ${msg.text}</p>`;
+            });
+            adminChatHistory.scrollTop = adminChatHistory.scrollHeight;
+        }
+
+        function adminSend() {
+            const input = document.getElementById('adminChatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const currentUser = document.getElementById('chatUser').textContent;
+            users[currentUser].messages.push({ from: seller, text: msg });
+            localStorage.setItem('users', JSON.stringify(users));
+
+            input.value = '';
+            viewUserChat(currentUser);
+        }
+    </script>
+</body>
+</html>
