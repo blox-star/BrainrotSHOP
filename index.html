@@ -601,13 +601,13 @@
             stock.push({ name, mutation, traits: selectedTraits });
             localStorage.setItem('stock', JSON.stringify(stock));
             closeAddStockModal();
-            buildGrid();
+            buildGrid(); // Updates grid for all users
         }
 
         function removeItem(index) {
             stock.splice(index, 1);
             localStorage.setItem('stock', JSON.stringify(stock));
-            buildGrid();
+            buildGrid(); // Updates grid for all users
         }
 
         function buyItem(name, mutation, traits) {
