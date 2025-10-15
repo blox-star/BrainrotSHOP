@@ -247,21 +247,36 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
             z-index: 1001;
+            box-sizing: border-box;
         }
-        #addStockModal select, #addStockModal button, #addStockModal input, #sellModal select, #sellModal button, #sellModal input {
+        #addStockModal select, #addStockModal button, #addStockModal input,
+        #sellModal select, #sellModal button, #sellModal input {
             width: 100%;
             margin: 5px 0;
             padding: 8px;
+            box-sizing: border-box;
+            font-size: 0.9em;
         }
-        #traitsContainer {
+        #addStockModal h3, #sellModal h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        #traitsContainer, #sellTraitsContainer {
             max-height: 200px;
             overflow-y: auto;
             margin: 10px 0;
+            padding: 5px;
+            border: 1px solid #eee;
         }
-        #traitsContainer label {
+        #traitsContainer label, #sellTraitsContainer label {
             display: block;
             text-align: left;
+            font-size: 0.85em;
+            margin: 3px 0;
         }
         #activeChatsBtn {
             display: none;
@@ -513,7 +528,7 @@
                     addStockBtn.style.display = 'block';
                     activeChatsBtn.style.display = 'block';
                     openChatBtn.style.display = 'none';
-                    sellBtn.style.display = 'none'; // Hide sell for admin
+                    sellBtn.style.display = 'none';
                 }
             } else {
                 authContainer.style.display = 'block';
