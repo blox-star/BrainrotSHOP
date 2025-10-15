@@ -235,7 +235,7 @@
             width: 300px;
             z-index: 1001;
         }
-        #addStockModal select, #addStockModal button {
+        #addStockModal select, #addStockModal button, #addStockModal input {
             width: 100%;
             margin: 5px 0;
             padding: 8px;
@@ -372,6 +372,7 @@
         <select id="mutationSelect">
             <!-- Options added via JS -->
         </select>
+        <input type="number" id="priceInput" placeholder="Price ($)" min="0" step="0.01" required>
         <div>Traits:</div>
         <div id="traitsContainer">
             <!-- Checkboxes added via JS -->
@@ -558,12 +559,13 @@
             stock.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'brainrot-card';
+                const priceDisplay = item.price !== undefined && item.price !== null ? `$${parseFloat(item.price).toFixed(2)}` : '$TBD';
                 card.innerHTML = `
                     <h3>${item.name}</h3>
                     <p>Mutation: ${item.mutation}</p>
                     <p>Traits: ${item.traits.join(', ') || 'None'}</p>
-                    <p>Price: $TBD</p>
-                    <button class="buy-button" onclick="buyItem('${item.name}', '${item.mutation}', '${item.traits.join(',')}')">Buy</button>
+                    <p>Price: ${priceDisplay}</p>
+                    <button class="buy-button" onclick="buyItem('${item.name}', '${item.mutation}', '${item.traits.join(',')}', ${item.price !== undefined ? item.price : 'null'})">Buy</button>
                 `;
                 if (loggedInUser === seller) {
                     card.innerHTML += `<button class="remove-btn" onclick="removeItem(${index})">-</button>`;
@@ -586,6 +588,7 @@
                 </label>
             `).join('');
 
+            document.getElementById('priceInput').value = '';
             document.getElementById('addStockModal').style.display = 'block';
         }
 
@@ -596,27 +599,34 @@
         function addStock() {
             const name = document.getElementById('brainrotSelect').value;
             const mutation = document.getElementById('mutationSelect').value;
+            const price = parseFloat(document.getElementById('priceInput').value);
             const selectedTraits = Array.from(document.querySelectorAll('#traitsContainer input:checked')).map(input => input.value);
 
-            stock.push({ name, mutation, traits: selectedTraits });
+            if (isNaN(price) || price < 0) {
+                alert('Please enter a valid price.');
+                return;
+            }
+
+            stock.push({ name, mutation, traits: selectedTraits, price });
             localStorage.setItem('stock', JSON.stringify(stock));
             closeAddStockModal();
-            buildGrid(); // Updates grid for all users
+            buildGrid();
         }
 
         function removeItem(index) {
             stock.splice(index, 1);
             localStorage.setItem('stock', JSON.stringify(stock));
-            buildGrid(); // Updates grid for all users
+            buildGrid();
         }
 
-        function buyItem(name, mutation, traits) {
+        function buyItem(name, mutation, traits, price) {
             if (!loggedInUser || loggedInUser === seller) {
                 alert('Please log in as a buyer to purchase.');
                 return;
             }
 
-            const itemDesc = `${name} (Mutation: ${mutation}, Traits: ${traits || 'None'})`;
+            const priceDisplay = price !== null && price !== undefined ? `$${parseFloat(price).toFixed(2)}` : '$TBD';
+            const itemDesc = `${name} (Mutation: ${mutation}, Traits: ${traits || 'None'}, Price: ${priceDisplay})`;
             messages.push({ from: loggedInUser, text: `I want to buy ${itemDesc}` });
             users[loggedInUser].messages = messages;
             localStorage.setItem('users', JSON.stringify(users));
@@ -625,7 +635,7 @@
         }
 
         function openChat() {
-            if (loggedInUser === seller) return; // Seller uses active chats
+            if (loggedInUser === seller) return;
 
             const chatModal = document.getElementById('chatModal');
             const chatHistory = document.getElementById('chatHistory');
