@@ -222,7 +222,21 @@
             box-shadow: 0 0 5px rgba(0,0,0,0.2);
             z-index: 999;
         }
-        #addStockModal {
+        #sellBtn {
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            left: 60px;
+            background: #d32f2f;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        #addStockModal, #sellModal {
             display: none;
             position: fixed;
             top: 50%;
@@ -235,7 +249,7 @@
             width: 300px;
             z-index: 1001;
         }
-        #addStockModal select, #addStockModal button, #addStockModal input {
+        #addStockModal select, #addStockModal button, #addStockModal input, #sellModal select, #sellModal button, #sellModal input {
             width: 100%;
             margin: 5px 0;
             padding: 8px;
@@ -364,6 +378,8 @@
 
     <button id="addStockBtn" onclick="openAddStockModal()">+</button>
 
+    <button id="sellBtn" onclick="openSellModal()">Sell</button>
+
     <div id="addStockModal">
         <h3>Add Brainrot to Stock</h3>
         <select id="brainrotSelect">
@@ -379,6 +395,23 @@
         </div>
         <button onclick="addStock()">Add to Stock</button>
         <button onclick="closeAddStockModal()">Cancel</button>
+    </div>
+
+    <div id="sellModal">
+        <h3>Sell Brainrot</h3>
+        <select id="sellBrainrotSelect">
+            <!-- Options added via JS -->
+        </select>
+        <select id="sellMutationSelect">
+            <!-- Options added via JS -->
+        </select>
+        <input type="number" id="sellPriceInput" placeholder="Price ($)" min="0" step="0.01" required>
+        <div>Traits:</div>
+        <div id="sellTraitsContainer">
+            <!-- Checkboxes added via JS -->
+        </div>
+        <button onclick="sellBrainrot()">Sell</button>
+        <button onclick="closeSellModal()">Cancel</button>
     </div>
 
     <button id="activeChatsBtn" onclick="openActiveChatsModal()">📩</button>
@@ -466,6 +499,7 @@
             const authContainer = document.getElementById('authContainer');
             const logoutCircle = document.getElementById('logoutCircle');
             const addStockBtn = document.getElementById('addStockBtn');
+            const sellBtn = document.getElementById('sellBtn');
             const activeChatsBtn = document.getElementById('activeChatsBtn');
             const openChatBtn = document.getElementById('openChatBtn');
 
@@ -474,15 +508,18 @@
                 authContainer.style.display = 'none';
                 logoutCircle.style.display = 'block';
                 openChatBtn.style.display = 'block';
+                sellBtn.style.display = 'block';
                 if (loggedInUser === seller) {
                     addStockBtn.style.display = 'block';
                     activeChatsBtn.style.display = 'block';
                     openChatBtn.style.display = 'none';
+                    sellBtn.style.display = 'none'; // Hide sell for admin
                 }
             } else {
                 authContainer.style.display = 'block';
                 logoutCircle.style.display = 'none';
                 addStockBtn.style.display = 'none';
+                sellBtn.style.display = 'none';
                 activeChatsBtn.style.display = 'none';
                 openChatBtn.style.display = 'none';
             }
@@ -613,6 +650,48 @@
             buildGrid();
         }
 
+        function openSellModal() {
+            const sellBrainrotSelect = document.getElementById('sellBrainrotSelect');
+            sellBrainrotSelect.innerHTML = brainrots.map(name => `<option value="${name}">${name}</option>`).join('');
+
+            const sellMutationSelect = document.getElementById('sellMutationSelect');
+            sellMutationSelect.innerHTML = Object.keys(mutations).map(name => `<option value="${name}">${name} (x${mutations[name]})</option>`).join('');
+
+            const sellTraitsContainer = document.getElementById('sellTraitsContainer');
+            sellTraitsContainer.innerHTML = Object.keys(traits).map(name => `
+                <label>
+                    <input type="checkbox" value="${name}"> ${name} (x${traits[name]})
+                </label>
+            `).join('');
+
+            document.getElementById('sellPriceInput').value = '';
+            document.getElementById('sellModal').style.display = 'block';
+        }
+
+        function closeSellModal() {
+            document.getElementById('sellModal').style.display = 'none';
+        }
+
+        function sellBrainrot() {
+            const name = document.getElementById('sellBrainrotSelect').value;
+            const mutation = document.getElementById('sellMutationSelect').value;
+            const price = parseFloat(document.getElementById('sellPriceInput').value);
+            const selectedTraits = Array.from(document.querySelectorAll('#sellTraitsContainer input:checked')).map(input => input.value);
+
+            if (isNaN(price) || price < 0) {
+                alert('Please enter a valid price.');
+                return;
+            }
+
+            const itemDesc = `${name} (Mutation: ${mutation}, Traits: ${selectedTraits.join(', ') || 'None'}, Price: $${price.toFixed(2)})`;
+            messages.push({ from: loggedInUser, text: `I want to sell ${itemDesc}`, type: 'sell' });
+            users[loggedInUser].messages = messages;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            closeSellModal();
+            openChat();
+        }
+
         function removeItem(index) {
             stock.splice(index, 1);
             localStorage.setItem('stock', JSON.stringify(stock));
@@ -627,7 +706,7 @@
 
             const priceDisplay = price !== null && price !== undefined ? `$${parseFloat(price).toFixed(2)}` : '$TBD';
             const itemDesc = `${name} (Mutation: ${mutation}, Traits: ${traits || 'None'}, Price: ${priceDisplay})`;
-            messages.push({ from: loggedInUser, text: `I want to buy ${itemDesc}` });
+            messages.push({ from: loggedInUser, text: `I want to buy ${itemDesc}`, type: 'buy' });
             users[loggedInUser].messages = messages;
             localStorage.setItem('users', JSON.stringify(users));
 
@@ -642,7 +721,13 @@
             chatModal.style.display = 'block';
             chatHistory.innerHTML = '';
             messages.forEach(msg => {
-                chatHistory.innerHTML += `<p><strong>${msg.from}:</strong> ${msg.text}</p>`;
+                let tag = '';
+                if (msg.type === 'buy') {
+                    tag = '<span style="color: green;">[Buying]</span> ';
+                } else if (msg.type === 'sell') {
+                    tag = '<span style="color: red;">[Selling]</span> ';
+                }
+                chatHistory.innerHTML += `<p>${tag}<strong>${msg.from}:</strong> ${msg.text}</p>`;
             });
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
@@ -686,7 +771,13 @@
             const adminChatHistory = document.getElementById('adminChatHistory');
             adminChatHistory.innerHTML = '';
             users[user].messages.forEach(msg => {
-                adminChatHistory.innerHTML += `<p><strong>${msg.from}:</strong> ${msg.text}</p>`;
+                let tag = '';
+                if (msg.type === 'buy') {
+                    tag = '<span style="color: green;">[Buying]</span> ';
+                } else if (msg.type === 'sell') {
+                    tag = '<span style="color: red;">[Selling]</span> ';
+                }
+                adminChatHistory.innerHTML += `<p>${tag}<strong>${msg.from}:</strong> ${msg.text}</p>`;
             });
             adminChatHistory.scrollTop = adminChatHistory.scrollHeight;
         }
