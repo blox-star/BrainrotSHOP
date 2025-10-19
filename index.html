@@ -32,14 +32,34 @@
             cursor: pointer;
             text-decoration: none;
             transition: background-color 0.3s;
+            margin-bottom: 2rem;
         }
         .button:hover {
             background-color: #1557b0;
+        }
+        .rainbow-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(
+                to right,
+                red,
+                orange,
+                yellow,
+                green,
+                blue,
+                indigo,
+                violet
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <h1>Tienda de Brainrots</h1>
     <a href="https://www.roblox.com/share?code=918c23ad6844ee43b778bf43046d7121&type=Server" class="button">Ver tienda!</a>
+    <p class="rainbow-text">Vende y compro brainrots por robux o pesos mexicanos!</p>
 </body>
 </html>
